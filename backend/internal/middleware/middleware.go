@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"os"
 	"strings"
 
 	"oltush/internal/config"
@@ -17,9 +18,9 @@ func CORS(next http.Handler) http.Handler {
 			"https://web.telegram.org",
 		}
 
-		// Add frontend URL from config if set
-		if cfg.FrontendURL != "" {
-			allowedOrigins = append(allowedOrigins, cfg.FrontendURL)
+		// Add frontend URL from env if set
+		if frontendURL := os.Getenv("FRONTEND_URL"); frontendURL != "" {
+			allowedOrigins = append(allowedOrigins, frontendURL)
 		}
 
 		allowOrigin := ""
