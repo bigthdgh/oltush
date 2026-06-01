@@ -1,0 +1,4 @@
+# Place your item photos here
+# Naming convention: {item_id}_{number}.jpg
+# Example: 1_1.jpg, 1_2.jpg, 1_3.jpg for item with id=1
+# Also supported: {item_id}.jpg as a single main photo

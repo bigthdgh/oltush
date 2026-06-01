@@ -1,0 +1,54 @@
+{
+  "01_domik1": {
+    "cover": null,
+    "gallery": []
+  },
+  "02_domik2": {
+    "cover": null,
+    "gallery": []
+  },
+  "03_domik3": {
+    "cover": null,
+    "gallery": []
+  },
+  "04_domik4": {
+    "cover": null,
+    "gallery": []
+  },
+  "05_domik5": {
+    "cover": null,
+    "gallery": []
+  },
+  "06_domik6": {
+    "cover": null,
+    "gallery": []
+  },
+  "07_domik7": {
+    "cover": null,
+    "gallery": []
+  },
+  "08_domik8": {
+    "cover": null,
+    "gallery": []
+  },
+  "09_banya": {
+    "cover": "/photos/items/09_banya/cover/9.jpg",
+    "gallery": [
+      "/photos/items/09_banya/9_1.jpg",
+      "/photos/items/09_banya/9_2.jpg",
+      "/photos/items/09_banya/9_3.jpg",
+      "/photos/items/09_banya/9_4.jpg",
+      "/photos/items/09_banya/9_5.jpg",
+      "/photos/items/09_banya/9_6.jpg"
+    ]
+  },
+  "10_kupel": {
+    "cover": null,
+    "gallery": [
+      "/photos/items/10_kupel/img_4172-scaled.webp",
+      "/photos/items/10_kupel/img_4830-scaled.webp",
+      "/photos/items/10_kupel/img_4832-2-scaled.webp",
+      "/photos/items/10_kupel/img_4835-scaled.webp"
+    ]
+  }
+}

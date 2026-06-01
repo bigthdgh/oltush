@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: oltush_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-oltush}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-oltush_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-oltush}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-oltush} -d ${POSTGRES_DB:-oltush}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: oltush_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgres://oltush:oltush_secret@postgres:5432/oltush?sslmode=disable}
+      BEPAID_ID: ${BEPAID_ID}
+      BEPAID_SECRET: ${BEPAID_SECRET}
+      BEPAID_CHECKOUT_URL: ${BEPAID_CHECKOUT_URL:-https://checkout.bepaid.by/v2/checkout}
+      BOT_TOKEN: ${BOT_TOKEN}
+      ADMIN_TG_IDS: ${ADMIN_TG_IDS}
+      APP_ENV: ${APP_ENV:-development}
+      PORT: ${PORT:-8080}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    container_name: oltush_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

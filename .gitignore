@@ -1,0 +1,26 @@
+.env
+.env.local
+.env.*.local
+node_modules/
+dist/
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+backend/server
+
+# Docker
+.dockerignore

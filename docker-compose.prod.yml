@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: oltush_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-oltush}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-oltush}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-oltush}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - oltush_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: oltush_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-oltush}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-oltush}?sslmode=disable
+      BEPAID_ID: ${BEPAID_ID}
+      BEPAID_SECRET: ${BEPAID_SECRET}
+      BEPAID_CHECKOUT_URL: ${BEPAID_CHECKOUT_URL:-https://checkout.bepaid.by/v2/checkout}
+      FRONTEND_URL: ${FRONTEND_URL}
+      BOT_TOKEN: ${BOT_TOKEN}
+      ADMIN_TG_IDS: ${ADMIN_TG_IDS}
+      APP_ENV: production
+      PORT: 8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - oltush_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: oltush_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/templates/default.conf.template:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+      - certbot_data:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot:ro
+    depends_on:
+      - backend
+    networks:
+      - oltush_network
+
+  certbot:
+    image: certbot/certbot
+    container_name: oltush_certbot
+    volumes:
+      - certbot_data:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h; done'"
+    networks:
+      - oltush_network
+
+  # One-time init container to obtain the first certificate.
+  # Run manually after starting the stack:
+  #   docker compose -f docker-compose.prod.yml run --rm certbot-init
+  certbot-init:
+    image: certbot/certbot
+    container_name: oltush_certbot_init
+    volumes:
+      - certbot_data:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: >
+      sh -c '
+        certbot certonly
+          --standalone
+          --agree-tos
+          --no-eff-email
+          -m admin@${DOMAIN}
+          -d ${DOMAIN}
+          --cert-name ${DOMAIN}
+      '
+    profiles:
+      - init
+
+volumes:
+  postgres_data:
+  certbot_data:
+  certbot_www:
+
+networks:
+  oltush_network:
+    driver: bridge
