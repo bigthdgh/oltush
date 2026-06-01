@@ -3,10 +3,10 @@ FROM golang:1.23-alpine AS builder
 RUN apk add --no-cache git
 
 WORKDIR /app
-COPY backend/go.mod backend/go.sum ./
+COPY go.mod go.sum ./
 RUN go mod download
 
-COPY backend/ ./
+COPY . ./
 RUN go build -o /app/server ./cmd/server
 
 FROM alpine:latest
