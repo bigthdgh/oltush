@@ -19,7 +19,7 @@ services:
       - key: PORT
         value: 8080
       - key: DATABASE_URL
-        value: postgresql://postgres:2g%2C%40f4A3CnpyWjN@db.wovdicelyhwaonikrbix.supabase.co:6543/postgres?sslmode=require
+        value: postgresql://oltush_db_user:w9InCpy5Xmzw8vmvexLFBbJTKRD7SulN@dpg-d8ev17ernols73ahaj6g-a/oltush_db
       - key: APP_ENV
         value: production
       - key: BEPAID_ID
