@@ -1,0 +1,43 @@
+services:
+  # Frontend - Static Site
+  - type: web
+    name: oltush-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    publishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://oltush-backend.onrender.com/api
+
+  # Backend - Go Web Service
+  - type: web
+    name: oltush-backend
+    env: go
+    buildCommand: go build -o server ./cmd/server
+    startCommand: ./server
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: DATABASE_URL
+        fromDatabase:
+          name: oltush-db
+          property: connectionString
+      - key: APP_ENV
+        value: production
+      - key: BEPAID_ID
+        sync: false
+      - key: BEPAID_SECRET
+        sync: false
+      - key: BEPAID_CHECKOUT_URL
+        value: https://checkout.bepaid.by/v2/checkout
+      - key: BOT_TOKEN
+        sync: false
+      - key: ADMIN_TG_IDS
+        sync: false
+      - key: FRONTEND_URL
+        value: https://oltush-frontend.onrender.com
+
+databases:
+  - name: oltush-db
+    databaseName: oltush
+    user: oltush
