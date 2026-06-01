@@ -19,7 +19,7 @@ services:
       - key: PORT
         value: 8080
       - key: DATABASE_URL
-        value: postgresql://postgres:2g%2C%40f4A3CnpyWjN@db.wovdicelyhwaonikrbix.supabase.co:5432/postgres?sslmode=require
+        value: postgresql://postgres:2g%2C%40f4A3CnpyWjN@db.wovdicelyhwaonikrbix.supabase.co:6543/postgres?sslmode=require
       - key: APP_ENV
         value: production
       - key: BEPAID_ID
