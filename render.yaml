@@ -25,15 +25,15 @@ services:
       - key: APP_ENV
         value: production
       - key: BEPAID_ID
-        sync: false
+        value: ""
       - key: BEPAID_SECRET
-        sync: false
+        value: ""
       - key: BEPAID_CHECKOUT_URL
         value: https://checkout.bepaid.by/v2/checkout
       - key: BOT_TOKEN
-        sync: false
+        value: 8835273304:AAEBk6yCMZyYhaxhvG_lm4tnIDf7V8Wm8G0
       - key: ADMIN_TG_IDS
-        sync: false
+        value: 8835273304
       - key: FRONTEND_URL
         value: https://oltush-frontend.onrender.com
 
