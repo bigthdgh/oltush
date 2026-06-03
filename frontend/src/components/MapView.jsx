@@ -385,12 +385,16 @@ export default function MapView() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
 
   const load = async () => {
+    setError(null);
     try {
       const res = await fetchItems();
       setItems(res.data);
-    } catch {
+    } catch (err) {
+      console.error('Failed to fetch items:', err);
+      setError(err.message || 'Ошибка загрузки');
       setItems([]);
     } finally {
       setLoading(false);
@@ -492,7 +496,20 @@ export default function MapView() {
         </>
       )}
 
-      {filtered.length === 0 && (
+      {error && (
+        <div className="text-center py-8 px-4 bg-red-50 rounded-2xl mb-6">
+          <p className="font-medium text-red-600 mb-1">Ошибка загрузки</p>
+          <p className="text-xs text-red-500">{error}</p>
+          <button
+            onClick={doRefresh}
+            className="mt-3 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-xl active:scale-95 transition-transform"
+          >
+            Повторить
+          </button>
+        </div>
+      )}
+
+      {!error && filtered.length === 0 && (
         <div className="text-center py-12 text-warm-400">
           <Filter size={32} className="mx-auto mb-3" />
           <p className="font-medium">Нет объектов выбранного типа</p>
