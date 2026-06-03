@@ -23,26 +23,30 @@ func CORS(next http.Handler) http.Handler {
 			allowedOrigins = append(allowedOrigins, frontendURL)
 		}
 
-		allowOrigin := ""
-		if origin == "" {
-			allowOrigin = "*"
+		// In production, allow all origins for Telegram Mini App compatibility
+		if os.Getenv("APP_ENV") == "production" {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
 		} else {
-			for _, o := range allowedOrigins {
-				if origin == o {
-					allowOrigin = origin
-					break
+			allowOrigin := ""
+			if origin == "" {
+				allowOrigin = "*"
+			} else {
+				for _, o := range allowedOrigins {
+					if origin == o {
+						allowOrigin = origin
+						break
+					}
 				}
 			}
-		}
-
-		if allowOrigin != "" {
-			w.Header().Set("Access-Control-Allow-Origin", allowOrigin)
+			if allowOrigin != "" {
+				w.Header().Set("Access-Control-Allow-Origin", allowOrigin)
+			}
+			if allowOrigin != "*" && allowOrigin != "" {
+				w.Header().Set("Access-Control-Allow-Credentials", "true")
+			}
 		}
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Telegram-ID")
-		if allowOrigin != "*" && allowOrigin != "" {
-			w.Header().Set("Access-Control-Allow-Credentials", "true")
-		}
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Telegram-ID, X-Telegram-User-ID")
 
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusNoContent)
