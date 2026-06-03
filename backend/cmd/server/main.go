@@ -90,6 +90,18 @@ func main() {
 
 	r.Post("/webhooks/telegram", bot.HandleWebhook(cfg))
 
+	// Serve frontend static files
+	fs := http.FileServer(http.Dir("../frontend/dist"))
+	r.Get("/*", func(w http.ResponseWriter, req *http.Request) {
+		// If the path is an API route, let chi handle it (shouldn't reach here due to order)
+		// Check if file exists, otherwise serve index.html for SPA routing
+		path := "../frontend/dist" + req.URL.Path
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			req.URL.Path = "/"
+		}
+		fs.ServeHTTP(w, req)
+	})
+
 	handlers.StartPendingCleanupTicker()
 
 	addr := ":" + cfg.Port
