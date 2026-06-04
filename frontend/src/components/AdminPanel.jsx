@@ -2,6 +2,7 @@ import React,{useState,useEffect}from'react';
 import{format,addMonths}from'date-fns';
 import{ru}from'date-fns/locale';
 import{motion,AnimatePresence}from'framer-motion';
+import{springSoft,EASE_OUT_QUINT}from'../animations';
 import{Shield,ChevronLeft,ChevronRight,Plus,RotateCcw,Home,Flame,Droplets,Loader2,Users,Calendar,CreditCard,Search,X,Edit3,Save,Trash2,User,Phone}from'lucide-react';
 import{fetchAdminBookings,createManualBooking,updateItem,fetchItems,fetchAllBookings,fetchAllCustomers,adminCancelBooking,adminUpdateBooking}from'../api';
 import{GlassCard}from'./GlassCard';
@@ -136,7 +137,7 @@ return(<button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={`flex 
 </div>
 <AnimatePresence>
 {showManualForm&&(
-<motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}} className={'overflow-hidden mb-4'}>
+<motion.div initial={{opacity:0,height:0,y:-8}} animate={{opacity:1,height:'auto',y:0}} exit={{opacity:0,height:0,y:-8}} transition={{duration:0.4,ease:EASE_OUT_QUINT}} className={'overflow-hidden mb-4'}>
 <GlassCard strong className={'!bg-gradient-to-br !from-forest-50 !to-wood-50'}>
 <h3 className={'font-bold text-forest-900 mb-3 flex items-center gap-2'}><Plus size={18} className={'text-forest-500'}/>Новое бронирование</h3>
 <div className={'space-y-2.5'}>

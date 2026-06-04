@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import { springSoft, EASE_OUT_QUINT } from '../animations';
 import {
   ArrowLeft, Calendar, User, Phone, Mail, Users, FileText,
   CreditCard, Check, Copy, Share2, Home, MapPin, Clock,
@@ -72,12 +73,12 @@ function validatePhone(raw) {
 }
 
 const slideVariants = {
-  initial: { x: 20, opacity: 0 },
-  animate: { x: 0, opacity: 1, transition: { duration: 0.4, ease: 'easeOut' } },
-  exit: { x: -20, opacity: 0, transition: { duration: 0.3, ease: 'easeIn' } },
+  initial: { x: 24, opacity: 0 },
+  animate: { x: 0, opacity: 1, transition: { duration: 0.45, ease: EASE_OUT_QUINT } },
+  exit: { x: -16, opacity: 0, transition: { duration: 0.35, ease: EASE_OUT_QUINT } },
 };
 
-const springTransition = { type: 'spring', stiffness: 200, damping: 25 };
+const springTransition = springSoft;
 
 function AnimatedCheck() {
   return (
@@ -89,7 +90,7 @@ function AnimatedCheck() {
       <motion.div
         initial={{ scale: 0, rotate: -45 }}
         animate={{ scale: 1, rotate: 0 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 25, delay: 0.2 }}
+        transition={{ ...springSoft, delay: 0.2 }}
       >
         <Check size={40} className="text-white" strokeWidth={3} />
       </motion.div>

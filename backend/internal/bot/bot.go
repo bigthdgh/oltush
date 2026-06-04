@@ -370,6 +370,18 @@ func HandleWebhook(cfg *config.Config) http.HandlerFunc {
 				}
 				msg += "Просто напишите вопрос — я постараюсь помочь!"
 				SendMessageKeyboard(chatID, msg, mainMenuKeyboard(), cfg)
+			case "stats":
+				if !IsAdmin(userID, cfg) {
+					SendMessage(chatID, "⛔ Нет доступа.", cfg)
+					break
+				}
+				var totalBookings, confirmed, pending, manual int
+				db.DB.QueryRow("SELECT COUNT(*) FROM bookings").Scan(&totalBookings)
+				db.DB.QueryRow("SELECT COUNT(*) FROM bookings WHERE status = 'confirmed'").Scan(&confirmed)
+				db.DB.QueryRow("SELECT COUNT(*) FROM bookings WHERE status = 'pending'").Scan(&pending)
+				db.DB.QueryRow("SELECT COUNT(*) FROM bookings WHERE is_manual_override = true").Scan(&manual)
+				msg := fmt.Sprintf("<b>Статистика бронирований</b>\n\nВсего: %d\nПодтверждено: %d\nОжидает: %d\nРучные: %d", totalBookings, confirmed, pending, manual)
+				SendMessageKeyboard(chatID, msg, mainMenuKeyboard(), cfg)
 			default:
 				if strings.HasPrefix(data, "cancel:") {
 					var bookingID int
@@ -517,10 +529,19 @@ func HandleWebhook(cfg *config.Config) http.HandlerFunc {
 				break
 			}
 			msg := "<b>Админ-панель Олтуш</b>\n\n"
-			msg += "Откройте админку через Mini App или используйте веб-интерфейс.\n\n"
-			msg += "Быстрые команды:\n"
-			msg += "/stats — Статистика"
-			SendMessage(chatID, msg, cfg)
+			msg += "Управление бронированиями, объектами и клиентами."
+			keyboard := map[string]interface{}{
+				"inline_keyboard": [][]map[string]interface{}{
+					{
+						{"text": "🛠 Открыть админ-панель", "web_app": map[string]string{"url": cfg.FrontendURL + "/admin"}},
+					},
+					{
+						{"text": "📊 Статистика", "callback_data": "stats"},
+						{"text": "🔙 Назад", "callback_data": "menu"},
+					},
+				},
+			}
+			SendMessageKeyboard(chatID, msg, keyboard, cfg)
 
 		case "/stats":
 			if !IsAdmin(userID, cfg) {

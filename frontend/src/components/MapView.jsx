@@ -6,6 +6,7 @@ import {
   Sun, Snowflake, MapPin, Filter, SlidersHorizontal, RefreshCw
 } from 'lucide-react';
 import { fetchItems } from '../api';
+import { springSoft, EASE_OUT_QUINT } from '../animations';
 import { GlassCard } from './GlassCard';
 import BaseMap from './BaseMap';
 import { getItemCoverPhoto } from '../utils/photos';
@@ -44,17 +45,19 @@ const containerVariants = {
   hidden: {},
   visible: {
     transition: {
-      staggerChildren: 0.1,
+      staggerChildren: 0.08,
+      delayChildren: 0.05,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 12 },
+  hidden: { opacity: 0, y: 18, scale: 0.96 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: 'easeOut' },
+    scale: 1,
+    transition: { duration: 0.55, ease: EASE_OUT_QUINT },
   },
 };
 
@@ -72,8 +75,8 @@ function ItemCard({ item }) {
   return (
     <motion.div
       variants={itemVariants}
-      whileHover={{ y: -3, transition: { duration: 0.35 } }}
-      whileTap={{ scale: 0.97 }}
+      whileHover={{ y: -4, scale: 1.015, transition: springSoft }}
+      whileTap={{ scale: 0.97, transition: { duration: 0.12 } }}
     >
       <Link
         to={`/item/${item.id}`}
@@ -92,8 +95,8 @@ function ItemCard({ item }) {
             alt={item.name}
             className="w-full h-full object-cover"
             loading="lazy"
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
+            whileHover={{ scale: 1.06 }}
+            transition={{ duration: 0.5, ease: EASE_OUT_QUINT }}
             onError={(e) => {
               e.target.src = 'https://images.unsplash.com/photo-1449156493391-d2cfa28e468b?w=800&q=80';
             }}
@@ -146,7 +149,7 @@ function SectionTitle({ title, subtitle, delay = 0 }) {
       className="mb-4"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.55, ease: 'easeOut' }}
+      transition={{ delay, duration: 0.6, ease: EASE_OUT_QUINT }}
     >
       <div className="flex items-center gap-2.5 mb-1">
         <span className="section-accent" />
@@ -229,13 +232,13 @@ function SeasonOffer({ items }) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.15, duration: 0.5, ease: 'easeOut' }}
+      transition={{ delay: 0.15, duration: 0.6, ease: EASE_OUT_QUINT }}
       className="mb-6"
     >
       <Link to={`/item/${target.id}`}>
         <motion.div
           className="relative overflow-hidden p-5"
-          whileTap={{ scale: 0.98 }}
+          whileTap={{ scale: 0.98, transition: { duration: 0.12 } }}
           style={{
             borderRadius: '20px',
             background: seasonBg,
@@ -275,7 +278,7 @@ function FilterBar({ active, onChange }) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1, duration: 0.5, ease: 'easeOut' }}
+      transition={{ delay: 0.1, duration: 0.55, ease: EASE_OUT_QUINT }}
       className="flex gap-2 mb-5 overflow-x-auto hide-scrollbar pb-1"
     >
       {FILTER_OPTIONS.map((f) => {
@@ -285,7 +288,7 @@ function FilterBar({ active, onChange }) {
           <motion.button
             key={f.key}
             onClick={() => onChange(f.key)}
-            whileTap={{ scale: 0.93 }}
+            whileTap={{ scale: 0.95, transition: { duration: 0.1 } }}
             className="flex items-center gap-1.5 whitespace-nowrap transition-all"
             style={{
               padding: '8px 18px',
@@ -349,7 +352,7 @@ function HeroSection({ housesCount, othersCount }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
+      transition={{ duration: 0.65, ease: EASE_OUT_QUINT }}
     >
       <div className="mb-6 overflow-hidden relative p-5 bg-white rounded-2xl border border-black/[0.06] shadow-sm">
         <div className="relative">

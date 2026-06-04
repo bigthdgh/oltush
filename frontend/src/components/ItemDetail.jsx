@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { springSoft, EASE_OUT_QUINT } from '../animations';
 import { fetchItem } from '../api';
 import {
   ArrowLeft, Users, Home, Flame, Droplets, BedDouble, Bath,
@@ -218,9 +219,10 @@ export default function ItemDetail() {
       <motion.button
         onClick={() => navigate('/')}
         className="flex items-center gap-2 font-medium mb-4 text-warm-500 hover:text-ink"
-        initial={{ opacity: 0, x: -10 }}
+        initial={{ opacity: 0, x: -12 }}
         animate={{ opacity: 1, x: 0 }}
-        whileTap={{ scale: 0.96 }}
+        transition={{ duration: 0.4, ease: EASE_OUT_QUINT }}
+        whileTap={{ scale: 0.96, transition: { duration: 0.12 } }}
       >
         <div className="w-9 h-9 rounded-2xl flex items-center justify-center bg-moss-100 text-moss-700">
           <ArrowLeft size={17} />
@@ -232,7 +234,7 @@ export default function ItemDetail() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
+        transition={{ delay: 0.1, duration: 0.5, ease: EASE_OUT_QUINT }}
       >
         <PhotoGallery
           photos={getItemPhotos(item)}
@@ -254,7 +256,7 @@ export default function ItemDetail() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
+        transition={{ delay: 0.15, duration: 0.5, ease: EASE_OUT_QUINT }}
       >
         <div className="mb-5 p-5 bg-white rounded-2xl border border-black/[0.06] shadow-sm">
           <div className="flex items-start justify-between mb-3">
@@ -308,7 +310,7 @@ export default function ItemDetail() {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-50px' }}
-        transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+        transition={springSoft}
       >
         <div className="flex items-center gap-2.5 mb-3">
           <span className="section-accent" />
@@ -327,7 +329,7 @@ export default function ItemDetail() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-50px' }}
-          transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+          transition={springSoft}
         >
           <div className="flex items-center gap-2.5 mb-3">
             <span className="section-accent" />
@@ -344,7 +346,7 @@ export default function ItemDetail() {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-50px' }}
-        transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+        transition={springSoft}
       >
         <div className="flex items-center gap-2.5 mb-3">
           <span className="section-accent" />
@@ -389,7 +391,7 @@ export default function ItemDetail() {
               </div>
             </div>
             <motion.button
-              whileTap={{ scale: 0.96 }}
+              whileTap={{ scale: 0.97, transition: { duration: 0.12 } }}
               onClick={() => navigate(`/booking/${item.id}`)}
               className="btn-primary !w-auto !px-5 !py-3 !min-h-[46px] !text-sm shrink-0"
             >

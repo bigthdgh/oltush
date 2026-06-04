@@ -7,16 +7,25 @@ export function useIsAdmin() {
 
   useEffect(() => {
     const tg = window.Telegram?.WebApp;
-    const userId = tg?.initDataUnsafe?.user?.id;
+    const user = tg?.initDataUnsafe?.user;
+    const userId = user?.id;
 
     if (!userId) {
+      console.log('useIsAdmin: no Telegram userId found');
       setLoading(false);
       return;
     }
 
+    console.log('useIsAdmin: checking for userId', userId);
     checkAdmin(userId)
-      .then(res => setIsAdmin(res.data.is_admin))
-      .catch(() => setIsAdmin(false))
+      .then(res => {
+        console.log('useIsAdmin: API response', res.data);
+        setIsAdmin(!!res.data?.is_admin);
+      })
+      .catch((err) => {
+        console.error('useIsAdmin: API error', err);
+        setIsAdmin(false);
+      })
       .finally(() => setLoading(false));
   }, []);
 

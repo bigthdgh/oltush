@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { springSoft, EASE_OUT_QUINT } from '../animations';
 import { format, isFuture, isPast } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import {
@@ -54,9 +55,10 @@ function BookingCard({ booking, onPay, onCancel, onRepeat }) {
 
   return (
     <motion.div
-      whileTap={{ scale: 0.97 }}
-      initial={{ opacity: 0, y: 16 }}
+      whileTap={{ scale: 0.97, transition: { duration: 0.12 } }}
+      initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: EASE_OUT_QUINT }}
     >
       <div
         className="relative overflow-hidden p-4"

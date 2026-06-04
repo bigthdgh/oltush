@@ -5,8 +5,9 @@ import{useNavigate}from'react-router-dom';
 import{Home,Flame,Droplets,Trees,Car,Tent}from'lucide-react';
 import{fetchBusyDates}from'../api';
 import{getItemCoverPhoto}from'../utils/photos';
+import{springSoft,EASE_OUT_QUINT}from'../animations';
 
-const typeConfig={house:{color:'#40916c',icon:Home,label:'Домик'},sauna:{color:'#bc6c25',icon:Flame,label:'Баня'},tub:{color:'#38bdf8',icon:Droplets,label:'Купель'}};
+const typeConfig={house:{color:'#3d5a36',icon:Home,label:'Домик',bg:'#e3ebe0'},sauna:{color:'#5c4a32',icon:Flame,label:'Баня',bg:'#f0e6d6'},tub:{color:'#0369a1',icon:Droplets,label:'Купель',bg:'#e0f2fe'}};
 
 // Layout: viewBox 0 0 500 400
 const BASE_LAYOUT={
@@ -49,7 +50,7 @@ setHovered(item);
 };
 
 return(
-<motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.3}} className="mb-8 relative">
+<motion.div initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{delay:0.3,duration:0.6,ease:EASE_OUT_QUINT}} className="mb-8 relative">
 <div className="flex items-center gap-2 mb-3"><Trees size={18} className="text-forest-500"/><h2 className="text-lg font-bold text-forest-900 tracking-tight">План территории</h2></div>
 <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-50 to-forest-50 border border-forest-100 shadow-lg">
 <svg viewBox="0 0 500 400" className="w-full h-auto" style={{aspectRatio:'5/4'}}>
@@ -93,7 +94,7 @@ const isBusy=isTodayBusy(busy);
 return(
 <motion.g key={item.id} className="cursor-pointer" onClick={()=>navigate(`/item/${item.id}`)} transform={`translate(${item.x},${item.y})`}
 onMouseEnter={()=>setHovered(item)} onMouseLeave={()=>setHovered(null)}
-whileHover={{scale:1.3}} transition={{type:'spring',stiffness:300,damping:20}} style={{transformOrigin:'center'}}>
+whileHover={{scale:1.25}} transition={springSoft} style={{transformOrigin:'center'}}>
 <title>{item.name}</title>
 <motion.circle cx={0} cy={0} r={size+6} fill={cfg.color} opacity={0.15} animate={{r:[size+6,size+14,size+6],opacity:[0.15,0.05,0.15]}} transition={{duration:2.5,repeat:Infinity,ease:'easeInOut',delay:i*0.2}}/>
 <defs><clipPath id={`clip-${item.id}`}><circle cx={0} cy={0} r={size/2}/></clipPath></defs>
@@ -112,7 +113,7 @@ whileHover={{scale:1.3}} transition={{type:'spring',stiffness:300,damping:20}} s
 {/* Detail card */}
 <AnimatePresence>
 {hovered&&(
-<motion.div initial={{opacity:0,y:6}} animate={{opacity:1,y:0}} exit={{opacity:0,y:6}} className="mt-3">
+<motion.div initial={{opacity:0,y:8,scale:0.97}} animate={{opacity:1,y:0,scale:1}} exit={{opacity:0,y:8,scale:0.97}} transition={{duration:0.35,ease:EASE_OUT_QUINT}} className="mt-3">
 <div className="glass rounded-2xl p-3 flex items-center gap-3">
 <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0"><img src={getItemCoverPhoto(hovered)} className="w-full h-full object-cover"/></div>
 <div className="flex-1 min-w-0">

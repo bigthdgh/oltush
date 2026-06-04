@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Trees, Shield, UserCircle, HelpCircle
 } from 'lucide-react';
+import { springSoft, navSpring, EASE_OUT_QUINT } from './animations';
 import { useTelegram } from './hooks/useTelegram';
 import { useIsAdmin } from './hooks/useIsAdmin';
 import { ToastContainer, useToast } from './components/Toast';
@@ -58,7 +59,7 @@ function Navigation({ isAdmin }) {
                     style={{
                       background: '#3d5a36',
                     }}
-                    transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                    transition={navSpring}
                   />
                 )}
                 <Icon size={20} strokeWidth={2} className="relative z-10" />
@@ -97,7 +98,7 @@ function AnimatedHeader() {
           borderBottom: scrolled ? '1px solid rgba(0,0,0,0.06)' : '1px solid transparent',
           paddingTop: 'env(safe-area-inset-top, 0px)',
         }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.45, ease: EASE_OUT_QUINT }}
       >
         <div className="px-5 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -125,10 +126,10 @@ function AnimatedHeader() {
 function PageTransition({ children }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12, scale: 0.98 }}
+      initial={{ opacity: 0, y: 20, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -8, scale: 0.98 }}
-      transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+      exit={{ opacity: 0, y: -14, scale: 0.98 }}
+      transition={{ duration: 0.45, ease: EASE_OUT_QUINT }}
     >
       {children}
     </motion.div>
