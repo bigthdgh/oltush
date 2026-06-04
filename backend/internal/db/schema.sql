@@ -50,3 +50,6 @@ CREATE TABLE IF NOT EXISTS payments (
 CREATE INDEX IF NOT EXISTS idx_bookings_item_dates ON bookings(item_id, start_date, end_date);
 CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(status);
 CREATE INDEX IF NOT EXISTS idx_payments_bepaid_uid ON payments(bepaid_uid);
+
+ALTER TABLE items ADD COLUMN IF NOT EXISTS map_x NUMERIC(8,2) DEFAULT 0;
+ALTER TABLE items ADD COLUMN IF NOT EXISTS map_y NUMERIC(8,2) DEFAULT 0;
