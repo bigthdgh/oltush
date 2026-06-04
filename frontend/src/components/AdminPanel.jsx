@@ -4,7 +4,7 @@ import{ru}from'date-fns/locale';
 import{motion,AnimatePresence}from'framer-motion';
 import{springSoft,EASE_OUT_QUINT}from'../animations';
 import{Shield,ChevronLeft,ChevronRight,Plus,RotateCcw,Home,Flame,Droplets,Loader2,Users,Calendar,CreditCard,Search,X,Edit3,Save,Trash2,User,Phone}from'lucide-react';
-import{fetchAdminBookings,createManualBooking,updateItem,fetchItems,fetchAllBookings,fetchAllCustomers,adminCancelBooking,adminUpdateBooking}from'../api';
+import{fetchAdminBookings,createManualBooking,updateItem,fetchAllItems,fetchAllBookings,fetchAllCustomers,adminCancelBooking,adminUpdateBooking}from'../api';
 import{GlassCard}from'./GlassCard';
 
 const typeIcons={house:Home,sauna:Flame,tub:Droplets};
@@ -32,7 +32,7 @@ useEffect(()=>{loadAllData();},[month]);
 const loadAllData=async()=>{
 setLoading(true);
 try{
-const[bookingsRes,allRes,itemsRes,custRes]=await Promise.all([fetchAdminBookings(month),fetchAllBookings().catch(()=>({data:[]})),fetchItems(),fetchAllCustomers().catch(()=>({data:[]}))]);
+const[bookingsRes,allRes,itemsRes,custRes]=await Promise.all([fetchAdminBookings(month),fetchAllBookings().catch(()=>({data:[]})),fetchAllItems(),fetchAllCustomers().catch(()=>({data:[]}))]);
 setBookings(bookingsRes.data||[]);
 setAllBookings(allRes.data||[]);
 setItems(itemsRes.data||[]);
@@ -44,8 +44,11 @@ finally{setLoading(false);}
 const handleManualSubmit=async()=>{
 if(!manualForm.item_id||!manualForm.start_date||!manualForm.end_date)return;
 setActionLoading(true);
-try{await createManualBooking(manualForm);setShowManualForm(false);setManualForm({item_id:'',start_date:'',end_date:'',guest_name:'',guest_phone:''});loadAllData();}
-catch(err){console.error(err);}
+try{
+const payload={...manualForm,item_id:parseInt(manualForm.item_id,10)};
+await createManualBooking(payload);setShowManualForm(false);setManualForm({item_id:'',start_date:'',end_date:'',guest_name:'',guest_phone:''});loadAllData();
+}
+catch(err){console.error('Manual booking error:',err);alert('Ошибка создания брони: '+err.message);}
 finally{setActionLoading(false);}
 };
 
@@ -59,7 +62,16 @@ const saveItemEdit=async()=>{
 if(!editingItem)return;
 setActionLoading(true);
 try{
-await updateItem(editingItem.id,{name:editingItem.name,type:editingItem.type,price_per_night:parseFloat(editingItem.price_per_night),max_guests:parseInt(editingItem.max_guests),description:editingItem.description,photo_url:editingItem.photo_url});
+await updateItem(editingItem.id,{
+name:editingItem.name,
+type:editingItem.type,
+price_per_night:parseFloat(editingItem.price_per_night),
+max_guests:parseInt(editingItem.max_guests),
+description:editingItem.description,
+photo_url:editingItem.photo_url,
+map_x:parseFloat(editingItem.map_x||0),
+map_y:parseFloat(editingItem.map_y||0)
+});
 setEditingItem(null);loadAllData();
 }catch(err){console.error(err);}
 finally{setActionLoading(false);}
@@ -115,7 +127,7 @@ return(
 
 <div className={'flex gap-1 mb-4 overflow-x-auto pb-1 -mx-1 px-1'}>
 {TABS.map(tab=>{const Icon=tab.icon;const isActive=activeTab===tab.id;
-return(<button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${isActive?'bg-forest-600 text-white shadow-md':'bg-white/60 text-forest-600 hover:bg-white/80 border border-forest-100'}`}><Icon size={14}/>{tab.label}</button>);
+return(<button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${isActive?'bg-forest-700 text-white shadow-md':'bg-white text-forest-700 border border-forest-200 hover:bg-forest-50'}`}><Icon size={14}/>{tab.label}</button>);
 })}
 </div>
 
@@ -154,7 +166,7 @@ return(<button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={`flex 
 <GlassCard strong className={'mb-6 overflow-hidden'}>
 <h3 className={'font-bold text-forest-900 mb-4'}>Шахматка</h3>
 <div className={'overflow-x-auto custom-scrollbar -mx-5 px-5'}><div className={'min-w-max'}>
-<div className={'flex items-center sticky left-0'}><div className={'w-32 shrink-0 py-1 px-2 text-[10px] font-semibold uppercase text-forest-400'}>Объект</div>{days.map(d=>(<div key={d} className={'w-8 shrink-0 text-center text-[10px] text-forest-500 py-1'}>{parseInt(d.split('-')[2])}</div>))}</div>
+<div className={'flex items-center sticky left-0'}><div className={'w-32 shrink-0 py-1 px-2 text-[10px] font-semibold uppercase text-forest-400'}>Объект</div>{days.map(d=>(<div key={d} className={'w-8 shrink-0 text-center text-[10px] text-forest-500 py-1 tabular-nums leading-none'}>{parseInt(d.split('-')[2])}</div>))}</div>
 {items.map(item=>{const TypeIcon=typeIcons[item.type]||Home;return(
 <div key={item.id} className={'flex items-center'}>
 <div className={'w-32 shrink-0 py-2 px-2 flex items-center gap-1.5'}><TypeIcon size={14} className={'text-forest-500 shrink-0'}/><span className={'text-xs font-medium text-forest-800 truncate'}>{item.name}</span></div>
@@ -243,6 +255,10 @@ return(<button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={`flex 
 <select value={editingItem.type} onChange={e=>setEditingItem({...editingItem,type:e.target.value})} className={'input-field !pl-3'}><option value={'house'}>Дом</option><option value={'sauna'}>Баня</option><option value={'tub'}>Купель</option></select>
 <input type={'number'} value={editingItem.price_per_night} onChange={e=>setEditingItem({...editingItem,price_per_night:e.target.value})} className={'input-field !pl-3'} placeholder={'Цена за ночь'}/>
 <input type={'number'} value={editingItem.max_guests} onChange={e=>setEditingItem({...editingItem,max_guests:e.target.value})} className={'input-field !pl-3'} placeholder={'Макс. гостей'}/>
+<div className={'grid grid-cols-2 gap-2'}>
+<input type={'number'} value={editingItem.map_x||0} onChange={e=>setEditingItem({...editingItem,map_x:e.target.value})} className={'input-field !pl-3'} placeholder={'Карта X'}/>
+<input type={'number'} value={editingItem.map_y||0} onChange={e=>setEditingItem({...editingItem,map_y:e.target.value})} className={'input-field !pl-3'} placeholder={'Карта Y'}/>
+</div>
 <textarea value={editingItem.description||''} onChange={e=>setEditingItem({...editingItem,description:e.target.value})} className={'input-field !pl-3 !py-2'} placeholder={'Описание'} rows={2}/>
 <input type={'text'} value={editingItem.photo_url||''} onChange={e=>setEditingItem({...editingItem,photo_url:e.target.value})} className={'input-field !pl-3'} placeholder={'URL фото'}/>
 <button onClick={saveItemEdit} disabled={actionLoading} className={'btn-primary !py-2'}><Save size={16}/>Сохранить</button>

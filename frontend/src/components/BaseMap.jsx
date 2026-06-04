@@ -43,7 +43,10 @@ Promise.all(items.map(i=>fetchBusyDates(i.id,month).then(r=>({id:i.id,dates:r.da
 .then(res=>{const m={};res.forEach(r=>m[r.id]=r.dates);setBusyMap(m);});
 },[items]);
 
-const placedItems=useMemo(()=>items.slice(0,positions.length).map((item,i)=>({...item,...positions[i]})),[items]);
+const placedItems=useMemo(()=>items.map((item,i)=>{
+const fallback=positions[i]||{x:120+(i%4)*60,y:100+Math.floor(i/4)*70};
+return{...item,x:item.map_x!=null?item.map_x:fallback.x,y:item.map_y!=null?item.map_y:fallback.y};
+}),[items]);
 
 const handleEnter=(item)=>{
 setHovered(item);

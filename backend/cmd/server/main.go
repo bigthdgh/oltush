@@ -85,6 +85,7 @@ func main() {
 		r.Put("/bookings/{id}", handlers.AdminUpdateBooking)
 		r.Post("/bookings/{id}/cancel", handlers.AdminCancelBooking)
 		r.Get("/customers", handlers.GetAllCustomers)
+		r.Get("/items/all", handlers.GetAllItems)
 		r.Put("/items/{id}", handlers.UpdateItem)
 	})
 

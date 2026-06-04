@@ -13,6 +13,8 @@ type Item struct {
 	IsActive      bool      `json:"is_active" db:"is_active"`
 	Description   *string   `json:"description,omitempty" db:"description"`
 	PhotoURL      *string   `json:"photo_url,omitempty" db:"photo_url"`
+	MapX          *float64  `json:"map_x,omitempty" db:"map_x"`
+	MapY          *float64  `json:"map_y,omitempty" db:"map_y"`
 }
 
 type Customer struct {

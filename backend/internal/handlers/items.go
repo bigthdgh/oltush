@@ -13,7 +13,7 @@ import (
 )
 
 func GetItems(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.DB.Query("SELECT id, name, type, price_per_night, max_guests, is_active, description, photo_url FROM items WHERE is_active = true")
+	rows, err := db.DB.Query("SELECT id, name, type, price_per_night, max_guests, is_active, description, photo_url, COALESCE(map_x,0), COALESCE(map_y,0) FROM items WHERE is_active = true")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -23,10 +23,13 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 	var items []models.Item
 	for rows.Next() {
 		var it models.Item
-		if err := rows.Scan(&it.ID, &it.Name, &it.Type, &it.PricePerNight, &it.MaxGuests, &it.IsActive, &it.Description, &it.PhotoURL); err != nil {
+		var mapX, mapY float64
+		if err := rows.Scan(&it.ID, &it.Name, &it.Type, &it.PricePerNight, &it.MaxGuests, &it.IsActive, &it.Description, &it.PhotoURL, &mapX, &mapY); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		it.MapX = &mapX
+		it.MapY = &mapY
 		items = append(items, it)
 	}
 
@@ -43,10 +46,13 @@ func GetItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var it models.Item
+	var mapX, mapY float64
 	err = db.DB.QueryRow(
-		"SELECT id, name, type, price_per_night, max_guests, is_active, description, photo_url FROM items WHERE id = $1",
+		"SELECT id, name, type, price_per_night, max_guests, is_active, description, photo_url, COALESCE(map_x,0), COALESCE(map_y,0) FROM items WHERE id = $1",
 		id,
-	).Scan(&it.ID, &it.Name, &it.Type, &it.PricePerNight, &it.MaxGuests, &it.IsActive, &it.Description, &it.PhotoURL)
+	).Scan(&it.ID, &it.Name, &it.Type, &it.PricePerNight, &it.MaxGuests, &it.IsActive, &it.Description, &it.PhotoURL, &mapX, &mapY)
+	it.MapX = &mapX
+	it.MapY = &mapY
 	if err == sql.ErrNoRows {
 		http.Error(w, "item not found", http.StatusNotFound)
 		return

@@ -138,7 +138,9 @@ html, body {
 }
 
 /* === INPUTS === */
-.input-field {
+.input-field,
+.input-field option,
+select.input-field {
   width: 100%;
   padding: 14px 16px;
   padding-left: 44px;

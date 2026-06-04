@@ -33,6 +33,8 @@ type UpdateItemRequest struct {
 	IsActive      *bool    `json:"is_active,omitempty"`
 	Description   *string  `json:"description,omitempty"`
 	PhotoURL      *string  `json:"photo_url,omitempty"`
+	MapX          *float64 `json:"map_x,omitempty"`
+	MapY          *float64 `json:"map_y,omitempty"`
 }
 
 type AdminUpdateBookingRequest struct {
@@ -42,6 +44,31 @@ type AdminUpdateBookingRequest struct {
 	GuestName  string  `json:"guest_name,omitempty"`
 	GuestPhone string  `json:"guest_phone,omitempty"`
 	TotalPrice float64 `json:"total_price,omitempty"`
+}
+
+func GetAllItems(w http.ResponseWriter, r *http.Request) {
+	rows, err := db.DB.Query("SELECT id, name, type, price_per_night, max_guests, is_active, description, photo_url, COALESCE(map_x,0), COALESCE(map_y,0) FROM items ORDER BY id")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var items []models.Item
+	for rows.Next() {
+		var it models.Item
+		var mapX, mapY float64
+		if err := rows.Scan(&it.ID, &it.Name, &it.Type, &it.PricePerNight, &it.MaxGuests, &it.IsActive, &it.Description, &it.PhotoURL, &mapX, &mapY); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		it.MapX = &mapX
+		it.MapY = &mapY
+		items = append(items, it)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(items)
 }
 
 func CreateManualBooking(cfg *config.Config) http.HandlerFunc {
@@ -189,6 +216,16 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	if req.PhotoURL != nil {
 		sets = append(sets, fmt.Sprintf("photo_url = $%d", argID))
 		args = append(args, *req.PhotoURL)
+		argID++
+	}
+	if req.MapX != nil {
+		sets = append(sets, fmt.Sprintf("map_x = $%d", argID))
+		args = append(args, *req.MapX)
+		argID++
+	}
+	if req.MapY != nil {
+		sets = append(sets, fmt.Sprintf("map_y = $%d", argID))
+		args = append(args, *req.MapY)
 		argID++
 	}
 

@@ -35,6 +35,7 @@ export const createManualBooking = (data) => api.post('/admin/bookings/manual', 
 export const adminUpdateBooking = (id, data) => api.put(`/admin/bookings/${id}`, data);
 export const adminCancelBooking = (id) => api.post(`/admin/bookings/${id}/cancel`);
 export const fetchAllCustomers = () => api.get('/admin/customers');
+export const fetchAllItems = () => api.get('/admin/items/all');
 export const updateItem = (id, data) => api.put(`/admin/items/${id}`, data);
 
 export default api;
