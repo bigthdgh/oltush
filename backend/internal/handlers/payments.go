@@ -150,7 +150,7 @@ func CreatePayment(cfg *config.Config) http.HandlerFunc {
 		paymentType := "card"
 		_, err = db.DB.Exec(
 			`INSERT INTO payments (booking_id, bepaid_uid, tracking_id, amount, status, payment_type)
-			 VALUES ($1, $2, $3, 'incomplete', $4)`,
+			 VALUES ($1, $2, $3, $4, 'incomplete', $5)`,
 			booking.ID, uid, payload.Checkout.Order.TrackingID, booking.TotalPrice, paymentType,
 		)
 		if err != nil {
