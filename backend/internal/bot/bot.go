@@ -573,28 +573,32 @@ func NotifyBookingCreated(bookingID int, cfg *config.Config) {
 	var itemName, guestName, guestPhone string
 	var startDate, endDate time.Time
 	var totalPrice float64
+	var customerTgID int64
 	err := db.DB.QueryRow(
-		`SELECT i.name, b.start_date, b.end_date, b.total_price, COALESCE(b.guest_name,''), COALESCE(b.guest_phone,'')
-		 FROM bookings b JOIN items i ON b.item_id = i.id WHERE b.id = $1`,
+		`SELECT i.name, b.start_date, b.end_date, b.total_price, COALESCE(b.guest_name,''), COALESCE(b.guest_phone,''), COALESCE(c.telegram_id, 0)
+		 FROM bookings b
+		 JOIN items i ON b.item_id = i.id
+		 LEFT JOIN customers c ON b.customer_id = c.id
+		 WHERE b.id = $1`,
 		bookingID,
-	).Scan(&itemName, &startDate, &endDate, &totalPrice, &guestName, &guestPhone)
+	).Scan(&itemName, &startDate, &endDate, &totalPrice, &guestName, &guestPhone, &customerTgID)
 
 	if err != nil {
 		slog.Error("NotifyBookingCreated: failed to load booking details", "booking_id", bookingID, "error", err)
 	}
 
-	var msg string
+	// Notify admins
+	var adminMsg string
 	if err != nil {
-		msg = fmt.Sprintf("<b>Новое бронирование!</b>\n\nБронь #%d создана.", bookingID)
+		adminMsg = fmt.Sprintf("<b>Новое бронирование!</b>\n\nБронь #%d создана.", bookingID)
 	} else {
-		msg = fmt.Sprintf(
+		adminMsg = fmt.Sprintf(
 			"<b>Новое бронирование #%d</b>\n\n🏠 %s\n📅 %s — %s\n💰 %.2f BYN\n👤 %s\n📞 %s",
 			bookingID, itemName,
 			startDate.Format("02.01.2006"), endDate.Format("02.01.2006"),
 			totalPrice, guestName, guestPhone,
 		)
 	}
-
 	for _, adminID := range cfg.AdminTgIDs {
 		if adminID == "" {
 			continue
@@ -602,9 +606,35 @@ func NotifyBookingCreated(bookingID int, cfg *config.Config) {
 		var id int64
 		fmt.Sscanf(adminID, "%d", &id)
 		if id > 0 {
-			if err := SendMessage(id, msg, cfg); err != nil {
-				slog.Error("NotifyBookingCreated: failed to send message", "admin_id", id, "error", err)
+			if err := SendMessage(id, adminMsg, cfg); err != nil {
+				slog.Error("NotifyBookingCreated: failed to send admin message", "admin_id", id, "error", err)
 			}
+		}
+	}
+
+	// Notify customer
+	if customerTgID > 0 {
+		payURL := cfg.FrontendURL
+		if payURL != "" {
+			payURL = payURL + "?pay=" + fmt.Sprintf("%d", bookingID)
+		}
+		customerMsg := fmt.Sprintf(
+			"<b>Бронирование подтверждено!</b>\n\n🏠 %s\n📅 %s — %s\n💰 %.2f BYN\n\nСтатус: ⏳ Ожидает оплаты",
+			itemName,
+			startDate.Format("02.01.2006"), endDate.Format("02.01.2006"),
+			totalPrice,
+		)
+		keyboard := mainMenuKeyboard()
+		if payURL != "" {
+			keyboard = map[string]interface{}{
+				"inline_keyboard": [][]map[string]interface{}{
+					{{"text": "💳 Оплатить", "url": payURL}},
+					{{"text": "📅 Мои брони", "callback_data": "bookings"}, {"text": "🏕️ Забронировать", "callback_data": "book"}},
+				},
+			}
+		}
+		if err := SendMessageKeyboard(customerTgID, customerMsg, keyboard, cfg); err != nil {
+			slog.Error("NotifyBookingCreated: failed to send customer message", "customer_tg_id", customerTgID, "error", err)
 		}
 	}
 }

@@ -58,6 +58,8 @@ export function useBooking() {
     setLoading(true);
     setError(null);
 
+    const telegramUserId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+
     try {
       const res = await createBooking({
         item_id: Number(itemId),
@@ -70,6 +72,7 @@ export function useBooking() {
         addons: bookingData.addons.map(a => a.id),
         notes: bookingData.notes,
         payment_type: bookingData.paymentType,
+        customer_id: telegramUserId ? Number(telegramUserId) : undefined,
       });
 
       const bookingId = res.data.booking_id;
