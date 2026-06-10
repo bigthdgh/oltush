@@ -183,12 +183,28 @@ export default function ItemDetail() {
   const config = typeConfig[item.type] || typeConfig.house;
   const TypeIcon = config.icon;
 
-  const amenities = [
-    { icon: Users, label: 'Гости', value: `до ${item.max_guests}` },
-    { icon: BedDouble, label: 'Спальных мест', value: item.beds ? `${item.beds}` : '2+' },
-    { icon: Bath, label: 'Удобства', value: item.has_bathroom ? 'В доме' : 'Общие' },
-    { icon: Wifi, label: 'Wi-Fi', value: item.has_wifi ? 'Есть' : 'Нет' },
-  ];
+  // Realistic defaults based on item type (fields can be added to DB later)
+  const typeAmenities = {
+    house: [
+      { icon: Users, label: 'Гости', value: `до ${item.max_guests}` },
+      { icon: BedDouble, label: 'Спальных мест', value: '4' },
+      { icon: Bath, label: 'Удобства', value: 'Санузел в доме' },
+      { icon: Wifi, label: 'Wi-Fi', value: 'Бесплатно' },
+    ],
+    sauna: [
+      { icon: Users, label: 'Вместимость', value: `до ${item.max_guests}` },
+      { icon: Flame, label: 'Тип', value: 'На дровах' },
+      { icon: Bath, label: 'Душ', value: 'Есть' },
+      { icon: Waves, label: 'Купель', value: 'Рядом' },
+    ],
+    tub: [
+      { icon: Users, label: 'Вместимость', value: `до ${item.max_guests}` },
+      { icon: Droplets, label: 'Тип', value: 'На дровах' },
+      { icon: Flame, label: 'Подогрев', value: 'Да' },
+      { icon: Bath, label: 'Душ', value: 'Рядом' },
+    ],
+  };
+  const amenities = typeAmenities[item.type] || typeAmenities.house;
 
   return (
     <div className="animate-fade-in overflow-y-auto" style={{ paddingBottom: 'calc(96px + env(safe-area-inset-bottom))' }}>

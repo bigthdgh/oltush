@@ -13,14 +13,14 @@ import (
 )
 
 func GetItems(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.DB.Query("SELECT id, name, type, price_per_night, max_guests, is_active, description, photo_url, COALESCE(map_x,0), COALESCE(map_y,0) FROM items WHERE is_active = true")
+	rows, err := db.DB.Query("SELECT id, name, type, price_per_night, max_guests, is_active, description, photo_url, COALESCE(map_x,0), COALESCE(map_y,0) FROM items WHERE is_active = true ORDER BY id")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
 
-	var items []models.Item
+	items := []models.Item{}
 	for rows.Next() {
 		var it models.Item
 		var mapX, mapY float64

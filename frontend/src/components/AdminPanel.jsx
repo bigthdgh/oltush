@@ -127,7 +127,7 @@ return(
 
 <div className={'flex gap-1 mb-4 overflow-x-auto pb-1 -mx-1 px-1'}>
 {TABS.map(tab=>{const Icon=tab.icon;const isActive=activeTab===tab.id;
-return(<button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${isActive?'bg-forest-700 text-white shadow-md':'bg-white text-forest-700 border border-forest-200 hover:bg-forest-50'}`}><Icon size={14}/>{tab.label}</button>);
+return(<button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${isActive?'bg-forest-700 text-white shadow-md':'bg-forest-50 text-forest-900 border border-forest-200 hover:bg-forest-100'}`}><Icon size={14}/>{tab.label}</button>);
 })}
 </div>
 
@@ -163,9 +163,9 @@ return(<button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={`flex 
 </motion.div>
 )}
 </AnimatePresence>
-<GlassCard strong className={'mb-6 overflow-hidden'}>
+<GlassCard strong className={'mb-6'}>
 <h3 className={'font-bold text-forest-900 mb-4'}>Шахматка</h3>
-<div className={'overflow-x-auto custom-scrollbar -mx-5 px-5'}><div className={'min-w-max'}>
+<div className={'overflow-auto custom-scrollbar -mx-5 px-5'} style={{maxHeight:'calc(100vh - 260px)'}}><div className={'min-w-max'}>
 <div className={'flex items-center sticky left-0'}><div className={'w-32 shrink-0 py-1 px-2 text-[10px] font-semibold uppercase text-forest-400'}>Объект</div>{days.map(d=>(<div key={d} className={'w-8 shrink-0 text-center text-[10px] text-forest-500 py-1 tabular-nums leading-none'}>{parseInt(d.split('-')[2])}</div>))}</div>
 {items.map(item=>{const TypeIcon=typeIcons[item.type]||Home;return(
 <div key={item.id} className={'flex items-center'}>
@@ -245,7 +245,7 @@ return(<button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={`flex 
 )}
 
 {activeTab==='items'&&(
-<div className={'space-y-3'}>
+<div className={'space-y-3 overflow-y-auto'} style={{maxHeight:'calc(100vh - 240px)'}}>
 {items.map(item=>{const TypeIcon=typeIcons[item.type]||Home;return(
 <GlassCard key={item.id}>
 {editingItem?.id===item.id?(

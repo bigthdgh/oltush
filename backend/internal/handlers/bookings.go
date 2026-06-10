@@ -17,13 +17,13 @@ type BusyDatesResponse struct {
 }
 
 type CreateBookingRequest struct {
-	ItemID      int    `json:"item_id"`
-	StartDate   string `json:"start_date"`
-	EndDate     string `json:"end_date"`
-	CustomerID  *int   `json:"customer_id,omitempty"`
-	GuestName   string `json:"guest_name"`
-	GuestPhone  string `json:"guest_phone"`
-	PaymentType string `json:"payment_type,omitempty"` // "full" | "deposit"
+	ItemID       int    `json:"item_id"`
+	StartDate    string `json:"start_date"`
+	EndDate      string `json:"end_date"`
+	TelegramID   *int64 `json:"customer_id,omitempty"` // Telegram user ID from frontend
+	GuestName    string `json:"guest_name"`
+	GuestPhone   string `json:"guest_phone"`
+	PaymentType  string `json:"payment_type,omitempty"` // "full" | "deposit"
 }
 
 type CreateBookingResponse struct {
@@ -31,9 +31,11 @@ type CreateBookingResponse struct {
 	CheckoutURL string `json:"checkout_url,omitempty"`
 }
 
-type Booking struct {
+type MyBooking struct {
 	ID         int       `json:"id"`
 	ItemID     int       `json:"item_id"`
+	ItemName   string    `json:"item_name"`
+	ItemPhoto  *string   `json:"item_photo,omitempty"`
 	StartDate  string    `json:"start_date"`
 	EndDate    string    `json:"end_date"`
 	Status     string    `json:"status"`
@@ -44,7 +46,7 @@ type Booking struct {
 }
 
 type MyBookingsResponse struct {
-	Data []Booking `json:"data"`
+	Data []MyBooking `json:"data"`
 }
 
 func GetBusyDates(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +84,7 @@ func GetBusyDates(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var dates []string
+	dates := []string{}
 	for rows.Next() {
 		var startDate, endDate time.Time
 		if err := rows.Scan(&startDate, &endDate); err != nil {
@@ -98,6 +100,24 @@ func GetBusyDates(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(BusyDatesResponse{Dates: dates})
+}
+
+// upsertCustomerByTelegramID creates or updates a customer record and returns the internal DB id.
+func upsertCustomerByTelegramID(telegramID int64, name, phone string) (*int, error) {
+	var id int
+	err := db.DB.QueryRow(
+		`INSERT INTO customers (telegram_id, first_name, phone)
+		 VALUES ($1, $2, $3)
+		 ON CONFLICT (telegram_id) DO UPDATE
+		 SET first_name = COALESCE(EXCLUDED.first_name, customers.first_name),
+		     phone = CASE WHEN EXCLUDED.phone != '' THEN EXCLUDED.phone ELSE customers.phone END
+		 RETURNING id`,
+		telegramID, name, phone,
+	).Scan(&id)
+	if err != nil {
+		return nil, err
+	}
+	return &id, nil
 }
 
 func CreateBooking(cfg *config.Config) http.HandlerFunc {
@@ -127,6 +147,16 @@ func CreateBooking(cfg *config.Config) http.HandlerFunc {
 		if nights <= 0 {
 			http.Error(w, "invalid date range", http.StatusBadRequest)
 			return
+		}
+
+		// Resolve Telegram ID to internal customer ID
+		var customerID *int
+		if req.TelegramID != nil && *req.TelegramID > 0 {
+			cid, err := upsertCustomerByTelegramID(*req.TelegramID, req.GuestName, req.GuestPhone)
+			if err == nil {
+				customerID = cid
+			}
+			// If upsert fails, proceed without customer_id (guest booking)
 		}
 
 		tx, err := db.DB.Begin()
@@ -184,7 +214,7 @@ func CreateBooking(cfg *config.Config) http.HandlerFunc {
 			`INSERT INTO bookings (item_id, customer_id, start_date, end_date, status, total_price, is_manual_override, guest_name, guest_phone, created_at, updated_at)
 			 VALUES ($1, $2, $3, $4, 'pending', $5, false, $6, $7, NOW(), NOW())
 			 RETURNING id`,
-			req.ItemID, req.CustomerID, req.StartDate, req.EndDate, totalPrice, req.GuestName, req.GuestPhone,
+			req.ItemID, customerID, req.StartDate, req.EndDate, totalPrice, req.GuestName, req.GuestPhone,
 		).Scan(&bookingID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -211,18 +241,23 @@ func GetMyBookings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := strconv.Atoi(userIDStr)
+	// user_id is the Telegram user ID; look up the internal customer ID first
+	telegramID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
 		http.Error(w, "invalid user_id", http.StatusBadRequest)
 		return
 	}
 
 	rows, err := db.DB.Query(
-		`SELECT id, item_id, start_date, end_date, status, total_price, guest_name, guest_phone, created_at
-		 FROM bookings
-		 WHERE customer_id = $1
-		 ORDER BY created_at DESC`,
-		userID,
+		`SELECT b.id, b.item_id, i.name, i.photo_url,
+		        b.start_date, b.end_date, b.status, b.total_price,
+		        COALESCE(b.guest_name, ''), COALESCE(b.guest_phone, ''), b.created_at
+		 FROM bookings b
+		 JOIN items i ON b.item_id = i.id
+		 JOIN customers c ON b.customer_id = c.id
+		 WHERE c.telegram_id = $1
+		 ORDER BY b.created_at DESC`,
+		telegramID,
 	)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -230,16 +265,23 @@ func GetMyBookings(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var bookings []Booking
+	bookings := []MyBooking{}
 	for rows.Next() {
-		var b Booking
-		if err := rows.Scan(&b.ID, &b.ItemID, &b.StartDate, &b.EndDate, &b.Status, &b.TotalPrice, &b.GuestName, &b.GuestPhone, &b.CreatedAt); err != nil {
+		var b MyBooking
+		var startDate, endDate time.Time
+		if err := rows.Scan(
+			&b.ID, &b.ItemID, &b.ItemName, &b.ItemPhoto,
+			&startDate, &endDate, &b.Status, &b.TotalPrice,
+			&b.GuestName, &b.GuestPhone, &b.CreatedAt,
+		); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		b.StartDate = startDate.Format("2006-01-02")
+		b.EndDate = endDate.Format("2006-01-02")
 		bookings = append(bookings, b)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(MyBookingsResponse{Data: bookings})
+	json.NewEncoder(w).Encode(bookings)
 }

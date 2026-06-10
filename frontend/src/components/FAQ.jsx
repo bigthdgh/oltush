@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   HelpCircle, Calendar, CreditCard, MapPin, Shield, Phone,
-  ChevronDown, ChevronUp, TreePine
+  ChevronDown, TreePine
 } from 'lucide-react';
 import { GlassCard } from './GlassCard';
+import { EASE_OUT_QUINT } from '../animations';
 
 const categories = [
   {
@@ -122,19 +123,18 @@ const categories = [
 
 function AccordionItem({ question, answer, isOpen, onToggle }) {
   return (
-    <div style={{ borderBottom: '1px solid #e7e5e4' }} className="last:border-0">
+    <div className="border-b border-warm-200 last:border-0">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between py-3.5 text-left"
+        className="w-full flex items-center justify-between py-4 text-left group"
       >
-        <span className="text-sm font-bold pr-3 transition-colors" style={{ color: isOpen ? '#5a7c52' : '#57534e' }}>
+        <span className={`text-sm font-bold pr-3 transition-colors duration-300 ${isOpen ? 'text-moss-600' : 'text-warm-600 group-hover:text-moss-600'}`}>
           {question}
         </span>
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
-          className="shrink-0"
-          style={{ color: isOpen ? '#5a7c52' : '#a8a29e' }}
+          className={`shrink-0 transition-colors duration-300 ${isOpen ? 'text-moss-600' : 'text-warm-400'}`}
         >
           <ChevronDown size={17} />
         </motion.div>
@@ -145,13 +145,10 @@ function AccordionItem({ question, answer, isOpen, onToggle }) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.45, ease: 'easeOut' }}
+            transition={{ duration: 0.45, ease: EASE_OUT_QUINT }}
             className="overflow-hidden"
           >
-            <p
-              className="text-sm leading-relaxed pb-3.5 pr-6 whitespace-pre-wrap"
-              style={{ color: '#78716c' }}
-            >
+            <p className="text-sm leading-relaxed pb-4 pr-6 whitespace-pre-wrap text-warm-500">
               {answer}
             </p>
           </motion.div>
@@ -175,31 +172,21 @@ export default function FAQ() {
 
   return (
     <div className="animate-fade-in pb-24">
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
+        transition={{ duration: 0.5, ease: EASE_OUT_QUINT }}
       >
-        <div
-          className="mb-5 flex items-center gap-3 p-5"
-          style={{
-            borderRadius: '28px',
-            background: '#f5f5f4',
-            border: '1px solid #e7e5e4',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-          }}
-        >
-          <div
-            className="w-11 h-11 rounded-2xl flex items-center justify-center"
-            style={{ background: '#3d5a36', boxShadow: '0 4px 14px rgba(90,124,82,0.35)' }}
-          >
+        <GlassCard className="mb-5 flex items-center gap-4">
+          <div className="w-11 h-11 rounded-2xl flex items-center justify-center gradient-forest shadow-forest">
             <HelpCircle size={22} className="text-white" strokeWidth={2.5} />
           </div>
           <div>
             <h2 className="text-xl font-black text-ink tracking-tight">Помощь</h2>
-            <p className="text-sm" style={{ color: 'rgba(90,124,82,0.65)' }}>Часто задаваемые вопросы</p>
+            <p className="text-sm text-moss-500">Часто задаваемые вопросы</p>
           </div>
-        </div>
+        </GlassCard>
       </motion.div>
 
       {/* Category tabs */}
@@ -212,21 +199,11 @@ export default function FAQ() {
               key={cat.id}
               onClick={() => { setActiveCategory(cat.id); setOpenItems({}); }}
               whileTap={{ scale: 0.93 }}
-              className="flex items-center gap-1.5 whitespace-nowrap transition-all"
-              style={{
-                padding: '8px 16px',
-                borderRadius: '100px',
-                fontSize: '12px',
-                fontWeight: 700,
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-                background: isActive
-                  ? '#3d5a36'
-                  : '#e7e5e4',
-                color: isActive ? '#ffffff' : '#a8a29e',
-                border: isActive ? 'none' : '1px solid #e7e5e4',
-                boxShadow: isActive ? '0 4px 14px rgba(90,124,82,0.3)' : 'none',
-              }}
+              className={`flex items-center gap-1.5 whitespace-nowrap transition-all px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+                isActive
+                  ? 'bg-moss-700 text-white shadow-forest'
+                  : 'bg-warm-200 text-warm-500 hover:bg-warm-300 hover:text-warm-600'
+              }`}
             >
               <Icon size={13} />
               {cat.label}
@@ -240,79 +217,59 @@ export default function FAQ() {
         key={activeCategory}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
+        transition={{ duration: 0.5, ease: EASE_OUT_QUINT }}
       >
-        <div
-          className="p-4"
-          style={{
-            borderRadius: '24px',
-            background: '#f5f5f4',
-            border: '1px solid #e7e5e4',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-          }}
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <CatIcon size={17} style={{ color: '#5a7c52' }} />
+        <GlassCard>
+          <div className="flex items-center gap-2 mb-2 pb-3 border-b border-warm-200">
+            <CatIcon size={17} className="text-moss-600" />
             <h3 className="font-black text-ink text-[15px]">{activeCat?.label}</h3>
           </div>
-          <AnimatePresence mode="popLayout" initial={false}>
-            {activeCat?.items.map((item, i) => (
+          <AnimatePresence mode="popLayout">
+            {activeCat?.items.map((item, idx) => (
               <motion.div
-                key={i}
+                key={`${activeCategory}-${idx}`}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.4, ease: 'easeOut', delay: i * 0.03 }}
+                transition={{ delay: idx * 0.04, duration: 0.4, ease: EASE_OUT_QUINT }}
               >
                 <AccordionItem
                   question={item.q}
                   answer={item.a}
-                  isOpen={!!openItems[`${activeCategory}-${i}`]}
-                  onToggle={() => toggleItem(activeCategory, i)}
+                  isOpen={!!openItems[`${activeCategory}-${idx}`]}
+                  onToggle={() => toggleItem(activeCategory, idx)}
                 />
               </motion.div>
             ))}
           </AnimatePresence>
-        </div>
+        </GlassCard>
       </motion.div>
 
-      {/* Contact card */}
+      {/* Contact hint */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
-        className="mt-5"
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.5, ease: EASE_OUT_QUINT }}
+        className="mt-6"
       >
-        <div
-          className="text-center p-6"
-          style={{
-            borderRadius: '24px',
-            background: 'rgba(90,124,82,0.06)',
-            border: '1px solid rgba(90,124,82,0.15)',
-          }}
-        >
+        <div className="text-center py-6">
           <motion.div
-            animate={{ y: [0, -5, 0] }}
+            className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 bg-moss-100"
+            animate={{ y: [0, -4, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <TreePine size={28} style={{ color: '#5a7c52' }} className="mx-auto mb-2" />
+            <TreePine size={28} className="text-moss-600" />
           </motion.div>
-          <p className="font-black text-ink text-[15px] mb-1">Не нашли ответ?</p>
-          <p className="text-xs mb-4" style={{ color: '#a8a29e' }}>Напишите нам в Telegram — ответим в течение часа</p>
-          <motion.button
-            whileTap={{ scale: 0.97 }}
-            onClick={() => {
-              if (window.Telegram?.WebApp?.openTelegramLink) {
-                window.Telegram.WebApp.openTelegramLink('https://t.me/oltush_support');
-              } else {
-                window.open('https://t.me/oltush_support', '_blank');
-              }
-            }}
-            className="btn-secondary"
+          <p className="font-bold text-ink text-sm mb-1">Не нашли ответ?</p>
+          <p className="text-xs text-warm-500 mb-3">Напишите нам — ответим в течение часа</p>
+          <a
+            href="https://t.me/bazaoltush"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-sky-500 text-white text-sm font-bold hover:bg-sky-600 transition-colors shadow-md"
           >
-            Написать в поддержку
-          </motion.button>
+            <Phone size={14} />
+            Написать в Telegram
+          </a>
         </div>
       </motion.div>
     </div>

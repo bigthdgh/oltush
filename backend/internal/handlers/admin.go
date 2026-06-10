@@ -54,7 +54,7 @@ func GetAllItems(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var items []models.Item
+	items := []models.Item{}
 	for rows.Next() {
 		var it models.Item
 		var mapX, mapY float64
@@ -274,7 +274,7 @@ func GetAllBookings(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var bookings []bookingWithItem
+	bookings := []bookingWithItem{}
 	for rows.Next() {
 		var b models.Booking
 		var itemName string
@@ -307,7 +307,7 @@ func GetAllCustomers(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var customers []models.Customer
+	customers := []models.Customer{}
 	for rows.Next() {
 		var c models.Customer
 		var username, firstName, lastName sql.NullString
